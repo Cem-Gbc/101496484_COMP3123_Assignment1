@@ -1,0 +1,15 @@
+node_modules/
+
+# Environment files with secrets (keep the example file)
+.env
+.env.*
+!.env.example
+
+# Generated log files (logs/sample-app.log is kept as an example)
+logs/*.log
+!logs/sample-app.log
+
+# Submission files and Vercel CLI settings
+submission/
+*.zip
+.vercel
