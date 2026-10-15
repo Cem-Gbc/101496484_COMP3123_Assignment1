@@ -5,13 +5,31 @@
 // server.js starts it locally, and Vercel uses this file directly.
 
 const express = require('express');
+const helmet = require('helmet');
 const connectDB = require('./config/db');
+const requestLogger = require('./middleware/requestLogger');
+const { apiLimiter } = require('./middleware/rateLimiter');
 const { getHealth } = require('./controllers/healthController');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const userRoutes = require('./routes/userRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 
 const app = express();
+
+// On Vercel the app runs behind Vercel's proxy. Trusting one proxy lets
+// req.ip be the real client IP, which the rate limiter needs.
+if (process.env.VERCEL) {
+  app.set('trust proxy', 1);
+}
+
+// Security headers (and removes the X-Powered-By header)
+app.use(helmet());
+
+// Log every request
+app.use(requestLogger);
+
+// General rate limit for every API request
+app.use('/api', apiLimiter);
 
 // Read JSON request bodies (small limit to block very large requests)
 app.use(express.json({ limit: '10kb' }));
