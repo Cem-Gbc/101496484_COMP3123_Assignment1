@@ -1,0 +1,9 @@
+# Files that are never uploaded to Vercel
+# (secrets are set in the Vercel project settings instead)
+.env
+.env.*
+logs
+submission
+screenshots
+*.docx
+*.zip
