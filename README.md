@@ -62,7 +62,7 @@ to the user who created it, and the API checks this ownership on every request.
 ├── utils/
 │   ├── logger.js          winston logger (console + log files)
 │   └── AppError.js        an error that has an HTTP status code
-├── logs/                  log files (sample-app.log is an example from a real test run)
+├── logs/                  log files (sample-app.log and sample-error.log are real examples from the test run)
 ├── screenshots/           Postman and MongoDB screenshots
 ├── COMP3123_Assignment1_Postman_Collection.json
 ├── 101496484_COMP3123_Assignment1_Screenshots.docx
@@ -405,7 +405,8 @@ Logging uses **winston** (`utils/logger.js`) plus a request logger middleware.
 
 - **Where:** `logs/app.log` (everything) and `logs/error.log` (errors only), created automatically.
   A file is rotated at 5 MB and 3 files are kept. Logs are also printed to the console.
-  Log files are in `.gitignore`; `logs/sample-app.log` is a real example from a test run.
+  Log files are in `.gitignore`; `logs/sample-app.log` and `logs/sample-error.log` are real copies from the
+  Postman test session.
 - **Format:** `2026-10-15T22:01:32.512Z [WARN] Access denied: user "alice" tried to access employee 6ad1... that belongs to another user`
 - **What is logged:**
   - server startup and the MongoDB connection
@@ -469,12 +470,17 @@ Manual tests:
 - **Database stopped (folder 8):** stop MongoDB (for example `docker stop comp3123-mongo`) and send 8.1 and 8.2:
   500 "Internal server error" and `"database": "disconnected"`.
 
-Results (Postman collection run with Newman, Postman's command line runner):
+Results:
 
-- Local (MongoDB in Docker): 64 requests, **193/193 assertions passed**; expired JWT and database-stopped tests also passed.
-- Deployed on Vercel (MongoDB Atlas): 78 requests, **207/207 assertions passed**.
+- **Postman Desktop:** every request was sent in Postman and captured (65 screenshots). All 65 returned the expected
+  status code and all of their Postman tests passed.
+- **Newman** (Postman's command line runner), local with MongoDB in Docker: 64 requests, **193/193 assertions passed**;
+  the expired JWT and database-stopped tests also passed.
+- **Newman** on the deployed API (Vercel + MongoDB Atlas): 78 requests, **207/207 assertions passed**.
 
-The screenshots of the tests are in `screenshots/` and in `101496484_COMP3123_Assignment1_Screenshots.docx`.
+The screenshots are in `screenshots/` (Postman, MongoDB and log files) and in
+`101496484_COMP3123_Assignment1_Screenshots.docx`, which lists the endpoint, expected status and actual status for each one.
+JWT values are blurred in the screenshots.
 
 ## Sample credentials for marking
 
