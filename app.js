@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 const { getHealth } = require('./controllers/healthController');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const userRoutes = require('./routes/userRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api', async (req, res, next) => {
 
 // API routes
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/emp', employeeRoutes);
 
 // Unknown routes and errors (must be last)
 app.use(notFound);
