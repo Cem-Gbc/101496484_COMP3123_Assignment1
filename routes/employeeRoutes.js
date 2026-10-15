@@ -1,5 +1,12 @@
 const express = require('express');
 const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const {
+  createEmployeeRules,
+  getEmployeeRules,
+  updateEmployeeRules,
+  deleteEmployeeRules,
+} = require('../validators/employeeValidator');
 const {
   getEmployees,
   createEmployee,
@@ -15,9 +22,9 @@ router.use(auth);
 
 // Base path: /api/v1/emp
 router.get('/employees', getEmployees);
-router.post('/employees', createEmployee);
-router.get('/employees/:eid', getEmployeeById);
-router.put('/employees/:eid', updateEmployee);
-router.delete('/employees', deleteEmployee); // uses ?eid=xxx
+router.post('/employees', createEmployeeRules, validate, createEmployee);
+router.get('/employees/:eid', getEmployeeRules, validate, getEmployeeById);
+router.put('/employees/:eid', updateEmployeeRules, validate, updateEmployee);
+router.delete('/employees', deleteEmployeeRules, validate, deleteEmployee); // uses ?eid=xxx
 
 module.exports = router;

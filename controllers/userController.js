@@ -5,12 +5,9 @@ const config = require('../config/config');
 const { createToken } = require('../services/tokenService');
 
 // POST /api/v1/user/signup - register a new user
+// (the body was already checked by signupRules in validators/userValidator.js)
 const signup = async (req, res) => {
-  const { username, email, password } = req.body || {};
-
-  if (!username || !email || !password) {
-    throw new AppError(400, 'Username, email and password are required');
-  }
+  const { username, email, password } = req.body;
 
   // Username and email must not belong to another user (409 Conflict)
   const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -32,12 +29,9 @@ const signup = async (req, res) => {
 };
 
 // POST /api/v1/user/login - log in with (username or email) + password
+// (the body was already checked by loginRules in validators/userValidator.js)
 const login = async (req, res) => {
-  const { username, email, password } = req.body || {};
-
-  if ((!username && !email) || !password) {
-    throw new AppError(400, 'Username or email, and password are required');
-  }
+  const { username, email, password } = req.body;
 
   // Find the user by email if it was sent, otherwise by username.
   // The password is hidden by default, so we ask for it with select('+password').

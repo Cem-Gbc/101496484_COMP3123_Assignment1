@@ -104,10 +104,6 @@ const updateEmployee = async (req, res) => {
 const deleteEmployee = async (req, res) => {
   const { eid } = req.query;
 
-  if (!eid) {
-    throw new AppError(400, 'Employee id (eid) is required');
-  }
-
   // 404 if it does not exist, 403 if it belongs to another user
   await findOwnedEmployee(eid, req.user);
 

@@ -31,7 +31,9 @@ const errorHandler = (err, req, res, next) => {
   } else if (err.name === 'ValidationError') {
     // Mongoose schema validation failed
     statusCode = 400;
-    message = Object.values(err.errors).map((e) => e.message).join(', ');
+    message = Object.values(err.errors)
+      .map((e) => (e.name === 'CastError' ? `Invalid value for ${e.path}` : e.message))
+      .join(', ');
   } else if (err.name === 'CastError') {
     // A value has the wrong type, for example an invalid ObjectId
     statusCode = 400;
