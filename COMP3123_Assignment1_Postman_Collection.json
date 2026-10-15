@@ -1,0 +1,3449 @@
+{
+  "info": {
+    "name": "COMP3123 Assignment 1 - 101496484",
+    "description": "COMP 3123 Assignment 1 - Secure REST API (Cem Dudu, 101496484).\n\nHow to run:\n1. Start MongoDB and the API (npm start). Use an empty comp3123_assignment1 database.\n2. Run the whole collection in order with the Collection Runner (folders 0 to 8).\n3. Restart the server before running it again (rate-limit counters are kept in memory) and use an empty database (users alice and bob are created by folder 1).\n\nSample test users: alice / alice@example.com / AlicePass123 and bob / bob@example.com / BobPass123\n\nTokens and ids are saved in the collection variables by the test scripts (tokenA, tokenB, empA1_id, ...). Their initial values are empty, so no real token is stored in this file.\n\nManual tests: 5.4-5.5 (expired JWT, needs JWT_EXPIRES_IN=30s) and folder 8 (MongoDB stopped, 500). They are skipped in a normal run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Health Check",
+      "description": "Checks that the API is running and connected to MongoDB.",
+      "item": [
+        {
+          "name": "0.1 Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Server is running\", () => pm.expect(json.status).to.eql(true));",
+                  "pm.test(\"Database is connected\", () => pm.expect(json.database).to.eql(\"connected\"));",
+                  "pm.test(\"Helmet security headers are present\", () => {",
+                  "    pm.response.to.have.header(\"Content-Security-Policy\");",
+                  "    pm.response.to.have.header(\"X-Content-Type-Options\", \"nosniff\");",
+                  "    pm.response.to.have.header(\"X-Frame-Options\");",
+                  "    pm.response.to.have.header(\"Strict-Transport-Security\");",
+                  "    pm.response.to.not.have.header(\"X-Powered-By\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "health"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public endpoint (no token). Returns server status, database status, uptime and time."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. User Registration",
+      "description": "POST /api/v1/user/signup - success and error cases.",
+      "item": [
+        {
+          "name": "1.1 Signup - User A (alice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"User is created\", () => pm.expect(json.user.username).to.eql(\"alice\"));",
+                  "pm.test(\"Password (or hash) is NOT returned\", () => pm.expect(json.user).to.not.have.property(\"password\"));",
+                  "pm.test(\"Timestamps exist\", () => pm.expect(json.user).to.have.property(\"created_at\"));",
+                  "pm.collectionVariables.set(\"userA_id\", json.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"AlicePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Signup - User B (bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"User is created\", () => pm.expect(json.user.username).to.eql(\"bob\"));",
+                  "pm.test(\"Password (or hash) is NOT returned\", () => pm.expect(json.user).to.not.have.property(\"password\"));",
+                  "pm.collectionVariables.set(\"userB_id\", json.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bob\",\n  \"email\": \"bob@example.com\",\n  \"password\": \"BobPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Signup - Duplicate username",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Username already exists\", () => pm.expect(json.message).to.eql(\"Username already exists\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"email\": \"alice.new@example.com\",\n  \"password\": \"AlicePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Signup - Duplicate email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Email already exists\", () => pm.expect(json.message).to.eql(\"Email already exists\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice2\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"AlicePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Signup - Invalid email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'email' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"email\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"charlie\",\n  \"email\": \"charlie-at-example.com\",\n  \"password\": \"CharliePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Signup - Invalid password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'password' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"password\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Password rules: 8-64 characters, at least one lowercase letter, one uppercase letter and one number.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"charlie\",\n  \"email\": \"charlie@example.com\",\n  \"password\": \"short\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.7 Signup - Missing required fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'username' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"username\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'email' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"email\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'password' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"password\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.8 Signup - Unexpected field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'role' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"role\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/signup",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "signup"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Fields that are not expected (like \"role\") are rejected.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"charlie\",\n  \"email\": \"charlie@example.com\",\n  \"password\": \"CharliePass123\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. User Login and JWT",
+      "description": "POST /api/v1/user/login - with username or email. A successful login returns a JWT that is saved in the collection variables tokenA / tokenB.",
+      "item": [
+        {
+          "name": "2.1 Login - User A with username",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"A JWT is returned\", () => pm.expect(json.jwt_token.split(\".\")).to.have.lengthOf(3));",
+                  "pm.test(\"Password (or hash) is NOT returned\", () => pm.expect(json.user).to.not.have.property(\"password\"));",
+                  "pm.collectionVariables.set(\"tokenA\", json.jwt_token);",
+                  "pm.collectionVariables.set(\"userA_id\", json.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"AlicePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Login - User B with email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"A JWT is returned\", () => pm.expect(json.jwt_token.split(\".\")).to.have.lengthOf(3));",
+                  "pm.test(\"Logged in as bob\", () => pm.expect(json.user.username).to.eql(\"bob\"));",
+                  "pm.collectionVariables.set(\"tokenB\", json.jwt_token);",
+                  "pm.collectionVariables.set(\"userB_id\", json.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"BobPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Login - Wrong password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Invalid username/email or password\", () => pm.expect(json.message).to.eql(\"Invalid username/email or password\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"WrongPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Login - User does not exist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Same message as a wrong password\", () => pm.expect(json.message).to.eql(\"Invalid username/email or password\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Same message as a wrong password, so nobody can find out which usernames exist.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nobody\",\n  \"password\": \"Whatever123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 Login - Missing credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'password' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"password\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'username' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"username\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Employee CRUD (User A)",
+      "description": "All employee routes need \"Authorization: Bearer <jwt>\". These requests use User A's token ({{tokenA}}).",
+      "item": [
+        {
+          "name": "3.1 Create employee - User A #1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Employee is returned with an id\", () => pm.expect(json.employee._id).to.be.a(\"string\"));",
+                  "pm.test(\"Owner (user) is the logged-in user from the JWT\", () => {",
+                  "    pm.expect(json.employee.user).to.eql(pm.collectionVariables.get(\"userA_id\"));",
+                  "});",
+                  "pm.test(\"Saved values are correct\", () => {",
+                  "    pm.expect(json.employee.email).to.eql(\"john.smith@example.com\");",
+                  "    pm.expect(json.employee.salary).to.eql(75000);",
+                  "});",
+                  "pm.test(\"created_at and updated_at timestamps exist\", () => {",
+                  "    pm.expect(json.employee).to.have.property(\"created_at\");",
+                  "    pm.expect(json.employee).to.have.property(\"updated_at\");",
+                  "});",
+                  "pm.collectionVariables.set(\"empA1_id\", json.employee._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Smith\",\n  \"email\": \"john.smith@example.com\",\n  \"position\": \"Software Developer\",\n  \"salary\": 75000,\n  \"date_of_joining\": \"2024-03-15\",\n  \"department\": \"Engineering\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Create employee - User A #2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Employee is returned with an id\", () => pm.expect(json.employee._id).to.be.a(\"string\"));",
+                  "pm.test(\"Owner (user) is the logged-in user from the JWT\", () => {",
+                  "    pm.expect(json.employee.user).to.eql(pm.collectionVariables.get(\"userA_id\"));",
+                  "});",
+                  "pm.test(\"Saved values are correct\", () => {",
+                  "    pm.expect(json.employee.email).to.eql(\"emily.chen@example.com\");",
+                  "    pm.expect(json.employee.salary).to.eql(62000);",
+                  "});",
+                  "pm.test(\"created_at and updated_at timestamps exist\", () => {",
+                  "    pm.expect(json.employee).to.have.property(\"created_at\");",
+                  "    pm.expect(json.employee).to.have.property(\"updated_at\");",
+                  "});",
+                  "pm.collectionVariables.set(\"empA2_id\", json.employee._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Emily\",\n  \"last_name\": \"Chen\",\n  \"email\": \"emily.chen@example.com\",\n  \"position\": \"QA Analyst\",\n  \"salary\": 62000,\n  \"date_of_joining\": \"2023-09-01\",\n  \"department\": \"Quality Assurance\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Create employee - User A #3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Employee is returned with an id\", () => pm.expect(json.employee._id).to.be.a(\"string\"));",
+                  "pm.test(\"Owner (user) is the logged-in user from the JWT\", () => {",
+                  "    pm.expect(json.employee.user).to.eql(pm.collectionVariables.get(\"userA_id\"));",
+                  "});",
+                  "pm.test(\"Saved values are correct\", () => {",
+                  "    pm.expect(json.employee.email).to.eql(\"mark.lee@example.com\");",
+                  "    pm.expect(json.employee.salary).to.eql(30000);",
+                  "});",
+                  "pm.test(\"created_at and updated_at timestamps exist\", () => {",
+                  "    pm.expect(json.employee).to.have.property(\"created_at\");",
+                  "    pm.expect(json.employee).to.have.property(\"updated_at\");",
+                  "});",
+                  "pm.collectionVariables.set(\"empA3_id\", json.employee._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Mark\",\n  \"last_name\": \"Lee\",\n  \"email\": \"mark.lee@example.com\",\n  \"position\": \"Intern\",\n  \"salary\": 30000,\n  \"date_of_joining\": \"2025-01-06\",\n  \"department\": \"Engineering\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 Get all employees - User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"User A has 3 employees\", () => pm.expect(json.count).to.eql(3));",
+                  "pm.test(\"Every employee belongs to User A\", () => {",
+                  "    json.employees.forEach((e) => pm.expect(e.user).to.eql(pm.collectionVariables.get(\"userA_id\")));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 Get employee by ID - User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"The requested employee is returned\", () => pm.expect(json.employee._id).to.eql(pm.collectionVariables.get(\"empA1_id\")));",
+                  "pm.test(\"Employee data is correct\", () => pm.expect(json.employee.first_name).to.eql(\"John\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.6 Update employee - User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Position and salary are updated\", () => {",
+                  "    pm.expect(json.employee.position).to.eql(\"Senior Software Developer\");",
+                  "    pm.expect(json.employee.salary).to.eql(85000);",
+                  "});",
+                  "pm.test(\"Other fields are unchanged\", () => pm.expect(json.employee.email).to.eql(\"john.smith@example.com\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Senior Software Developer\",\n  \"salary\": 85000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.7 Delete employee - User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204 No Content\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"Response body is empty\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees?eid={{empA3_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000",
+              "query": [
+                {
+                  "key": "eid",
+                  "value": "{{empA3_id}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.8 Get deleted employee - 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Employee not found\", () => pm.expect(json.message).to.eql(\"Employee not found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA3_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA3_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Validation and Error Responses",
+      "description": "Invalid input, invalid IDs, missing records, malformed JSON and unknown routes. Uses User A's token.",
+      "item": [
+        {
+          "name": "4.1 Create employee - Missing fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'last_name' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"last_name\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'email' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"email\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'position' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"position\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'salary' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"salary\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'date_of_joining' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"date_of_joining\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'department' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"department\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 Create employee - Invalid email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'email' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"email\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"anna.kim@\",\n  \"position\": \"Designer\",\n  \"salary\": 58000,\n  \"date_of_joining\": \"2024-08-19\",\n  \"department\": \"Design\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 Create employee - Negative salary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'salary' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"salary\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"anna.kim@example.com\",\n  \"position\": \"Designer\",\n  \"salary\": -5000,\n  \"date_of_joining\": \"2024-08-19\",\n  \"department\": \"Design\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 Create employee - Salary is not a number",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'salary' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"salary\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"anna.kim@example.com\",\n  \"position\": \"Designer\",\n  \"salary\": \"fifty thousand\",\n  \"date_of_joining\": \"2024-08-19\",\n  \"department\": \"Design\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.5 Create employee - Invalid date",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'date_of_joining' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"date_of_joining\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"anna.kim@example.com\",\n  \"position\": \"Designer\",\n  \"salary\": 58000,\n  \"date_of_joining\": \"2024-02-30\",\n  \"department\": \"Design\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.6 Create employee - Client tries to set the owner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'user' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"user\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "User A tries to create an employee owned by User B by sending a \"user\" field. The owner always comes from the JWT, so this field is rejected.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"anna.kim@example.com\",\n  \"position\": \"Designer\",\n  \"salary\": 58000,\n  \"date_of_joining\": \"2024-08-19\",\n  \"department\": \"Design\",\n  \"user\": \"{{userB_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.7 Create employee - Duplicate email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message explains the duplicate\", () => pm.expect(json.message).to.include(\"already have an employee with this email\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "One user cannot have two employees with the same email.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"john.smith@example.com\",\n  \"position\": \"Designer\",\n  \"salary\": 58000,\n  \"date_of_joining\": \"2024-08-19\",\n  \"department\": \"Design\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.8 Get employee - Invalid ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'eid' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"eid\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/12345",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "12345"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.9 Get employee - Employee does not exist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Employee not found\", () => pm.expect(json.message).to.eql(\"Employee not found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/507f1f77bcf86cd799439011",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "507f1f77bcf86cd799439011"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.10 Update employee - Invalid fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'email' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"email\");",
+                  "});",
+                  "",
+                  "pm.test(\"Validation error mentions the 'salary' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"salary\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"salary\": -1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.11 Update employee - Empty body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message asks for at least one field\", () => pm.expect(json.message).to.include(\"at least one\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.12 Delete employee - Missing eid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'eid' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"eid\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.13 Delete employee - Invalid eid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "",
+                  "pm.test(\"Validation error mentions the 'eid' field\", () => {",
+                  "    const fields = json.errors.map((e) => e.field);",
+                  "    pm.expect(fields).to.include(\"eid\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees?eid=abc123",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000",
+              "query": [
+                {
+                  "key": "eid",
+                  "value": "abc123"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.14 Delete employee - Employee does not exist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees?eid=507f1f77bcf86cd799439011",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000",
+              "query": [
+                {
+                  "key": "eid",
+                  "value": "507f1f77bcf86cd799439011"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.15 Malformed JSON body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Malformed JSON in request body\", () => pm.expect(json.message).to.eql(\"Malformed JSON in request body\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.16 Unsupported endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message names the route\", () => pm.expect(json.message).to.include(\"Route not found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/unknown",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "unknown"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. JWT Authentication Errors",
+      "description": "Requests to a protected route with a missing, invalid, tampered or expired token. All must return 401.",
+      "item": [
+        {
+          "name": "5.1 Missing JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: No token provided\", () => pm.expect(json.message).to.include(\"No token provided\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 Invalid JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Invalid token\", () => pm.expect(json.message).to.eql(\"Invalid token\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{invalidToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 Tampered JWT (user id changed)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Change the user id inside User A's token to User B's id (signature stays the same)",
+                  "const decodeBase64 = require(\"atob\");",
+                  "const fromBase64Url = (s) => decodeBase64(s.replace(/-/g, \"+\").replace(/_/g, \"/\") + \"=\".repeat((4 - (s.length % 4)) % 4));",
+                  "const encodeBase64 = require(\"btoa\");",
+                  "const toBase64Url = (s) => encodeBase64(s).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");",
+                  "const [header, payload, signature] = pm.collectionVariables.get(\"tokenA\").split(\".\");",
+                  "const claims = JSON.parse(fromBase64Url(payload));",
+                  "claims.id = pm.collectionVariables.get(\"userB_id\");",
+                  "claims.username = \"bob\";",
+                  "pm.collectionVariables.set(\"tamperedToken\", [header, toBase64Url(JSON.stringify(claims)), signature].join(\".\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message: Invalid token\", () => pm.expect(json.message).to.eql(\"Invalid token\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tamperedToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Takes User A's real token and changes the user id inside it to User B's id, without a new signature. The signature check fails, so the server rejects it."
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 Expired JWT - step 1: log in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"expiredToken\", json.jwt_token);",
+                  "pm.test(\"Token lifetime (JWT_EXPIRES_IN) is \" + json.expires_in, () => pm.expect(json.expires_in).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "To test an expired token: start the server with JWT_EXPIRES_IN=30s, send this request, then send 5.5 (it waits until the token has expired). With the normal 1h setting, 5.5 is skipped.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"AlicePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.5 Expired JWT - step 2: use the expired token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// If the token from step 1 expires within 60 seconds, wait until it has expired",
+                  "const decodeBase64 = require(\"atob\");",
+                  "const fromBase64Url = (s) => decodeBase64(s.replace(/-/g, \"+\").replace(/_/g, \"/\") + \"=\".repeat((4 - (s.length % 4)) % 4));",
+                  "const token = pm.collectionVariables.get(\"expiredToken\");",
+                  "if (token) {",
+                  "    const exp = JSON.parse(fromBase64Url(token.split(\".\")[1])).exp;",
+                  "    const secondsLeft = exp - Math.floor(Date.now() / 1000);",
+                  "    if (secondsLeft >= 0 && secondsLeft <= 60) {",
+                  "        console.log(\"Waiting \" + (secondsLeft + 2) + \" seconds for the token to expire...\");",
+                  "        setTimeout(() => {}, (secondsLeft + 2) * 1000);",
+                  "    }",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const decodeBase64 = require(\"atob\");",
+                  "const fromBase64Url = (s) => decodeBase64(s.replace(/-/g, \"+\").replace(/_/g, \"/\") + \"=\".repeat((4 - (s.length % 4)) % 4));",
+                  "const token = pm.collectionVariables.get(\"expiredToken\");",
+                  "const expired = token && JSON.parse(fromBase64Url(token.split(\".\")[1])).exp * 1000 < Date.now();",
+                  "if (expired) {",
+                  "    pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "    pm.test(\"Message: Token has expired\", () => pm.expect(pm.response.json().message).to.include(\"expired\"));",
+                  "} else {",
+                  "    pm.test.skip(\"Token is not expired - start the server with JWT_EXPIRES_IN=30s to run this test\", () => {});",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{expiredToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Only runs the expiry check when the server was started with a short JWT_EXPIRES_IN (for example 30s). The script waits until the token from 5.4 has expired, then sends it."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Two-User Authorization Tests",
+      "description": "User A owns John Smith and Emily Chen. User B owns Sara Ahmed and David Brown. Each user can only see and manage their own employees: cross-user GET, PUT and DELETE return 403 Forbidden.",
+      "item": [
+        {
+          "name": "6.1 Create employee - User B #1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Employee is returned with an id\", () => pm.expect(json.employee._id).to.be.a(\"string\"));",
+                  "pm.test(\"Owner (user) is the logged-in user from the JWT\", () => {",
+                  "    pm.expect(json.employee.user).to.eql(pm.collectionVariables.get(\"userB_id\"));",
+                  "});",
+                  "pm.test(\"Saved values are correct\", () => {",
+                  "    pm.expect(json.employee.email).to.eql(\"sara.ahmed@example.com\");",
+                  "    pm.expect(json.employee.salary).to.eql(82000);",
+                  "});",
+                  "pm.test(\"created_at and updated_at timestamps exist\", () => {",
+                  "    pm.expect(json.employee).to.have.property(\"created_at\");",
+                  "    pm.expect(json.employee).to.have.property(\"updated_at\");",
+                  "});",
+                  "pm.collectionVariables.set(\"empB1_id\", json.employee._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Sara\",\n  \"last_name\": \"Ahmed\",\n  \"email\": \"sara.ahmed@example.com\",\n  \"position\": \"HR Manager\",\n  \"salary\": 82000,\n  \"date_of_joining\": \"2022-11-20\",\n  \"department\": \"Human Resources\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 Create employee - User B #2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Employee is returned with an id\", () => pm.expect(json.employee._id).to.be.a(\"string\"));",
+                  "pm.test(\"Owner (user) is the logged-in user from the JWT\", () => {",
+                  "    pm.expect(json.employee.user).to.eql(pm.collectionVariables.get(\"userB_id\"));",
+                  "});",
+                  "pm.test(\"Saved values are correct\", () => {",
+                  "    pm.expect(json.employee.email).to.eql(\"david.brown@example.com\");",
+                  "    pm.expect(json.employee.salary).to.eql(68000);",
+                  "});",
+                  "pm.test(\"created_at and updated_at timestamps exist\", () => {",
+                  "    pm.expect(json.employee).to.have.property(\"created_at\");",
+                  "    pm.expect(json.employee).to.have.property(\"updated_at\");",
+                  "});",
+                  "pm.collectionVariables.set(\"empB2_id\", json.employee._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"David\",\n  \"last_name\": \"Brown\",\n  \"email\": \"david.brown@example.com\",\n  \"position\": \"Accountant\",\n  \"salary\": 68000,\n  \"date_of_joining\": \"2024-06-10\",\n  \"department\": \"Finance\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 User A lists employees - only own",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "const ids = json.employees.map((e) => e._id);",
+                  "pm.test(\"User A sees exactly 2 employees\", () => pm.expect(json.count).to.eql(2));",
+                  "pm.test(\"All belong to User A\", () => json.employees.forEach((e) => pm.expect(e.user).to.eql(pm.collectionVariables.get(\"userA_id\"))));",
+                  "pm.test(\"User B's employees are NOT in the list\", () => {",
+                  "    pm.expect(ids).to.not.include(pm.collectionVariables.get(\"empB1_id\"));",
+                  "    pm.expect(ids).to.not.include(pm.collectionVariables.get(\"empB2_id\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.4 User B lists employees - only own",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "const ids = json.employees.map((e) => e._id);",
+                  "pm.test(\"User B sees exactly 2 employees\", () => pm.expect(json.count).to.eql(2));",
+                  "pm.test(\"All belong to User B\", () => json.employees.forEach((e) => pm.expect(e.user).to.eql(pm.collectionVariables.get(\"userB_id\"))));",
+                  "pm.test(\"User A's employees are NOT in the list\", () => {",
+                  "    pm.expect(ids).to.not.include(pm.collectionVariables.get(\"empA1_id\"));",
+                  "    pm.expect(ids).to.not.include(pm.collectionVariables.get(\"empA2_id\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.5 User A gets User B's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empB1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empB1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.6 User A updates User B's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empB1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empB1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.7 User A deletes User B's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees?eid={{empB1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000",
+              "query": [
+                {
+                  "key": "eid",
+                  "value": "{{empB1_id}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.8 User B gets User A's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.9 User B updates User A's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.10 User B deletes User A's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees?eid={{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000",
+              "query": [
+                {
+                  "key": "eid",
+                  "value": "{{empA1_id}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.11 User B's employee is unchanged",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Salary is still 82000 (User A's update was blocked)\", () => pm.expect(json.employee.salary).to.eql(82000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empB1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empB1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.12 User A's employee is unchanged",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Salary is still 85000 (User B's update was blocked)\", () => pm.expect(json.employee.salary).to.eql(85000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees/{{empA1_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{empA1_id}}"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Rate Limiting (run last)",
+      "description": "Login and signup share a limit of 20 requests per 15 minutes per IP (AUTH_RATE_LIMIT). In the Collection Runner, request 7.1 repeats itself until the server answers 429. Restart the server to reset the counters.",
+      "item": [
+        {
+          "name": "7.1 Login - repeat until 429 Too Many Requests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// The Collection Runner sends this request again until the server answers 429",
+                  "const attempts = Number(pm.collectionVariables.get(\"rateLimitAttempts\") || 0) + 1;",
+                  "pm.collectionVariables.set(\"rateLimitAttempts\", attempts);",
+                  "",
+                  "if (pm.response.code === 429) {",
+                  "    pm.collectionVariables.set(\"rateLimitAttempts\", 0);",
+                  "    pm.test(\"Status code is 429 Too Many Requests (attempt \" + attempts + \" in this run)\", () => pm.response.to.have.status(429));",
+                  "    pm.test(\"Retry-After header tells the client when to try again\", () => pm.response.to.have.header(\"Retry-After\"));",
+                  "    pm.test(\"JSON error message is returned\", () => pm.expect(pm.response.json().message).to.include(\"Too many requests\"));",
+                  "} else {",
+                  "    pm.test(\"Attempt \" + attempts + \": not limited yet (status \" + pm.response.code + \")\", () => pm.expect(pm.response.code).to.be.oneOf([200, 401]));",
+                  "    if (attempts < 60) {",
+                  "        pm.execution.setNextRequest(pm.info.requestName);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/user/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"WrongPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Manual Tests - Database Stopped (500)",
+      "description": "Manual: stop MongoDB (for example \"docker stop comp3123-mongo\"), then send these requests. With MongoDB running, 8.1 is skipped and 8.2 only checks the normal health response.",
+      "item": [
+        {
+          "name": "8.1 Database stopped - 500 Internal Server Error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 500) {",
+                  "    pm.test(\"Status code is 500 Internal Server Error\", () => pm.response.to.have.status(500));",
+                  "    const json = pm.response.json();",
+                  "    pm.test(\"Internal details are hidden from the client\", () => pm.expect(json.message).to.eql(\"Internal server error\"));",
+                  "} else {",
+                  "    pm.test.skip(\"MongoDB is running - stop it to see the 500 response\", () => {});",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/emp/employees",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "When MongoDB is stopped, the database call fails. The central error handler logs the full error and returns a general 500 message without internal details."
+          },
+          "response": []
+        },
+        {
+          "name": "8.2 Health check - database status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Health check reports the database status (\" + json.database + \")\", () => pm.expect(json.database).to.be.oneOf([\"connected\", \"disconnected\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "health"
+              ],
+              "port": "3000"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "tokenA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenB",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userA_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userB_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empA1_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empA2_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empA3_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empB1_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empB2_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invalidToken",
+      "value": "this.is.not-a-valid-token",
+      "type": "string"
+    },
+    {
+      "key": "tamperedToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expiredToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rateLimitAttempts",
+      "value": "0",
+      "type": "string"
+    }
+  ]
+}
