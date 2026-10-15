@@ -16,10 +16,26 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message;
 
-  // The request body is not valid JSON
   if (err.type === 'entity.parse.failed') {
+    // The request body is not valid JSON
     statusCode = 400;
     message = 'Malformed JSON in request body';
+  } else if (err.type === 'entity.too.large') {
+    // The request body is bigger than the 10kb limit
+    statusCode = 413;
+    message = 'Request body is too large';
+  } else if (err.code === 11000) {
+    // MongoDB duplicate key: a unique field already has this value
+    statusCode = 409;
+    message = 'A record with the same unique value already exists';
+  } else if (err.name === 'ValidationError') {
+    // Mongoose schema validation failed
+    statusCode = 400;
+    message = Object.values(err.errors).map((e) => e.message).join(', ');
+  } else if (err.name === 'CastError') {
+    // A value has the wrong type, for example an invalid ObjectId
+    statusCode = 400;
+    message = `Invalid value for ${err.path}`;
   }
 
   if (statusCode >= 500) {

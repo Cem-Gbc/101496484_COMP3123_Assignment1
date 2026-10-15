@@ -8,6 +8,7 @@ const express = require('express');
 const connectDB = require('./config/db');
 const { getHealth } = require('./controllers/healthController');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use('/api', async (req, res, next) => {
   await connectDB();
   next();
 });
+
+// API routes
+app.use('/api/v1/user', userRoutes);
 
 // Unknown routes and errors (must be last)
 app.use(notFound);
