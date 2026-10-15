@@ -1,0 +1,161 @@
+2026-10-15T22:25:25.600Z [INFO] Connected to MongoDB database "comp3123_assignment1"
+2026-10-15T22:25:25.630Z [INFO] Server started on http://localhost:3000
+2026-10-15T22:25:26.132Z [INFO] GET /health 200 9ms ip=::1 user=-
+2026-10-15T22:32:11.537Z [INFO] GET /health 200 9ms ip=::1 user=-
+2026-10-15T22:37:37.567Z [INFO] GET /health 200 3ms ip=::1 user=-
+2026-10-15T22:37:57.856Z [INFO] New user registered: alice
+2026-10-15T22:37:57.858Z [INFO] POST /api/v1/user/signup 201 134ms ip=::1 user=-
+2026-10-15T22:38:04.535Z [INFO] New user registered: bob
+2026-10-15T22:38:04.536Z [INFO] POST /api/v1/user/signup 201 71ms ip=::1 user=-
+2026-10-15T22:38:11.043Z [WARN] Signup failed: username already exists (username: alice)
+2026-10-15T22:38:11.045Z [WARN] POST /api/v1/user/signup 409 12ms ip=::1 user=-
+2026-10-15T22:38:17.869Z [WARN] Signup failed: email already exists (username: alice2)
+2026-10-15T22:38:17.871Z [WARN] POST /api/v1/user/signup 409 8ms ip=::1 user=-
+2026-10-15T22:38:24.674Z [WARN] Validation failed: POST /api/v1/user/signup - email
+2026-10-15T22:38:24.675Z [WARN] POST /api/v1/user/signup 400 3ms ip=::1 user=-
+2026-10-15T22:38:32.203Z [WARN] Validation failed: POST /api/v1/user/signup - password, password, password
+2026-10-15T22:38:32.204Z [WARN] POST /api/v1/user/signup 400 3ms ip=::1 user=-
+2026-10-15T22:38:39.386Z [WARN] Validation failed: POST /api/v1/user/signup - username, email, password
+2026-10-15T22:38:39.387Z [WARN] POST /api/v1/user/signup 400 3ms ip=::1 user=-
+2026-10-15T22:38:46.586Z [WARN] Validation failed: POST /api/v1/user/signup - role
+2026-10-15T22:38:46.586Z [WARN] POST /api/v1/user/signup 400 2ms ip=::1 user=-
+2026-10-15T22:38:56.594Z [INFO] Login successful: alice
+2026-10-15T22:38:56.595Z [INFO] POST /api/v1/user/login 200 73ms ip=::1 user=-
+2026-10-15T22:39:05.237Z [INFO] Login successful: bob
+2026-10-15T22:39:05.238Z [INFO] POST /api/v1/user/login 200 67ms ip=::1 user=-
+2026-10-15T22:40:12.294Z [WARN] Login failed for "alice"
+2026-10-15T22:40:12.295Z [WARN] POST /api/v1/user/login 401 65ms ip=::1 user=-
+2026-10-15T22:40:20.107Z [WARN] Login failed for "nobody"
+2026-10-15T22:40:20.108Z [WARN] POST /api/v1/user/login 401 5ms ip=::1 user=-
+2026-10-15T22:40:27.953Z [WARN] Validation failed: POST /api/v1/user/login - password, username
+2026-10-15T22:40:27.954Z [WARN] POST /api/v1/user/login 400 3ms ip=::1 user=-
+2026-10-15T22:40:38.207Z [INFO] Employee 6ad15666e91e30ffa68501a0 created by alice
+2026-10-15T22:40:38.207Z [INFO] POST /api/v1/emp/employees 201 20ms ip=::1 user=alice
+2026-10-15T22:40:46.030Z [INFO] Employee 6ad1566ee91e30ffa68501a1 created by alice
+2026-10-15T22:40:46.031Z [INFO] POST /api/v1/emp/employees 201 14ms ip=::1 user=alice
+2026-10-15T22:40:50.693Z [INFO] Employee 6ad15672e91e30ffa68501a2 created by alice
+2026-10-15T22:40:50.695Z [INFO] POST /api/v1/emp/employees 201 9ms ip=::1 user=alice
+2026-10-15T22:40:55.523Z [INFO] GET /api/v1/emp/employees 200 15ms ip=::1 user=alice
+2026-10-15T22:41:03.723Z [INFO] GET /api/v1/emp/employees/6ad15666e91e30ffa68501a0 200 9ms ip=::1 user=alice
+2026-10-15T22:41:12.412Z [INFO] Employee 6ad15666e91e30ffa68501a0 updated by alice
+2026-10-15T22:41:12.416Z [INFO] PUT /api/v1/emp/employees/6ad15666e91e30ffa68501a0 200 36ms ip=::1 user=alice
+2026-10-15T22:41:21.478Z [INFO] Employee 6ad15672e91e30ffa68501a2 deleted by alice
+2026-10-15T22:41:21.479Z [INFO] DELETE /api/v1/emp/employees?eid=6ad15672e91e30ffa68501a2 204 15ms ip=::1 user=alice
+2026-10-15T22:41:29.640Z [WARN] GET /api/v1/emp/employees/6ad15672e91e30ffa68501a2 404 7ms ip=::1 user=alice
+2026-10-15T22:42:50.201Z [WARN] Validation failed: POST /api/v1/emp/employees - position, salary, date_of_joining, department, last_name, email
+2026-10-15T22:42:50.201Z [WARN] POST /api/v1/emp/employees 400 5ms ip=::1 user=alice
+2026-10-15T22:42:59.857Z [WARN] Validation failed: POST /api/v1/emp/employees - email
+2026-10-15T22:42:59.857Z [WARN] POST /api/v1/emp/employees 400 5ms ip=::1 user=alice
+2026-10-15T22:43:09.831Z [WARN] Validation failed: POST /api/v1/emp/employees - salary
+2026-10-15T22:43:09.833Z [WARN] POST /api/v1/emp/employees 400 8ms ip=::1 user=alice
+2026-10-15T22:43:19.060Z [WARN] Validation failed: POST /api/v1/emp/employees - salary
+2026-10-15T22:43:19.061Z [WARN] POST /api/v1/emp/employees 400 6ms ip=::1 user=alice
+2026-10-15T22:43:28.910Z [WARN] Validation failed: POST /api/v1/emp/employees - date_of_joining
+2026-10-15T22:43:28.910Z [WARN] POST /api/v1/emp/employees 400 9ms ip=::1 user=alice
+2026-10-15T22:43:40.264Z [WARN] Validation failed: POST /api/v1/emp/employees - user
+2026-10-15T22:43:40.265Z [WARN] POST /api/v1/emp/employees 400 6ms ip=::1 user=alice
+2026-10-15T22:43:50.094Z [WARN] POST /api/v1/emp/employees 409 8ms ip=::1 user=alice
+2026-10-15T22:44:00.015Z [WARN] Validation failed: GET /api/v1/emp/employees/12345 - eid
+2026-10-15T22:44:00.016Z [WARN] GET /api/v1/emp/employees/12345 400 6ms ip=::1 user=alice
+2026-10-15T22:44:10.174Z [WARN] GET /api/v1/emp/employees/507f1f77bcf86cd799439011 404 6ms ip=::1 user=alice
+2026-10-15T22:44:20.181Z [WARN] Validation failed: PUT /api/v1/emp/employees/6ad15666e91e30ffa68501a0 - salary, email
+2026-10-15T22:44:20.182Z [WARN] PUT /api/v1/emp/employees/6ad15666e91e30ffa68501a0 400 5ms ip=::1 user=alice
+2026-10-15T22:44:30.937Z [WARN] PUT /api/v1/emp/employees/6ad15666e91e30ffa68501a0 400 5ms ip=::1 user=alice
+2026-10-15T22:44:41.566Z [WARN] Validation failed: DELETE /api/v1/emp/employees - eid
+2026-10-15T22:44:41.567Z [WARN] DELETE /api/v1/emp/employees 400 5ms ip=::1 user=alice
+2026-10-15T22:44:52.484Z [WARN] Validation failed: DELETE /api/v1/emp/employees?eid=abc123 - eid
+2026-10-15T22:44:52.485Z [WARN] DELETE /api/v1/emp/employees?eid=abc123 400 5ms ip=::1 user=alice
+2026-10-15T22:45:02.851Z [WARN] DELETE /api/v1/emp/employees?eid=507f1f77bcf86cd799439011 404 7ms ip=::1 user=alice
+2026-10-15T22:45:13.228Z [WARN] POST /api/v1/emp/employees 400 2ms ip=::1 user=-
+2026-10-15T22:45:23.680Z [WARN] GET /api/v1/unknown 404 0ms ip=::1 user=-
+2026-10-15T22:45:43.862Z [WARN] Auth failed (no token): GET /api/v1/emp/employees
+2026-10-15T22:45:43.863Z [WARN] GET /api/v1/emp/employees 401 2ms ip=::1 user=-
+2026-10-15T22:45:54.982Z [WARN] Auth failed (invalid token): GET /api/v1/emp/employees
+2026-10-15T22:45:54.982Z [WARN] GET /api/v1/emp/employees 401 1ms ip=::1 user=-
+2026-10-15T22:46:05.557Z [WARN] Auth failed (invalid token): GET /api/v1/emp/employees
+2026-10-15T22:46:05.557Z [WARN] GET /api/v1/emp/employees 401 1ms ip=::1 user=-
+2026-10-15T22:46:17.602Z [INFO] Employee 6ad157b9e91e30ffa68501a3 created by bob
+2026-10-15T22:46:17.603Z [INFO] POST /api/v1/emp/employees 201 11ms ip=::1 user=bob
+2026-10-15T22:46:28.299Z [INFO] Employee 6ad157c4e91e30ffa68501a4 created by bob
+2026-10-15T22:46:28.300Z [INFO] POST /api/v1/emp/employees 201 11ms ip=::1 user=bob
+2026-10-15T22:46:36.184Z [INFO] GET /api/v1/emp/employees 200 7ms ip=::1 user=alice
+2026-10-15T22:46:47.282Z [INFO] GET /api/v1/emp/employees 200 7ms ip=::1 user=bob
+2026-10-15T22:46:58.161Z [WARN] Access denied: user "alice" tried to access employee 6ad157b9e91e30ffa68501a3 that belongs to another user
+2026-10-15T22:46:58.162Z [WARN] GET /api/v1/emp/employees/6ad157b9e91e30ffa68501a3 403 6ms ip=::1 user=alice
+2026-10-15T22:47:09.856Z [WARN] Access denied: user "alice" tried to access employee 6ad157b9e91e30ffa68501a3 that belongs to another user
+2026-10-15T22:47:09.857Z [WARN] PUT /api/v1/emp/employees/6ad157b9e91e30ffa68501a3 403 11ms ip=::1 user=alice
+2026-10-15T22:47:21.708Z [WARN] Access denied: user "alice" tried to access employee 6ad157b9e91e30ffa68501a3 that belongs to another user
+2026-10-15T22:47:21.709Z [WARN] DELETE /api/v1/emp/employees?eid=6ad157b9e91e30ffa68501a3 403 7ms ip=::1 user=alice
+2026-10-15T22:47:34.052Z [WARN] Access denied: user "bob" tried to access employee 6ad15666e91e30ffa68501a0 that belongs to another user
+2026-10-15T22:47:34.053Z [WARN] GET /api/v1/emp/employees/6ad15666e91e30ffa68501a0 403 9ms ip=::1 user=bob
+2026-10-15T22:47:47.852Z [WARN] Access denied: user "bob" tried to access employee 6ad15666e91e30ffa68501a0 that belongs to another user
+2026-10-15T22:47:47.854Z [WARN] PUT /api/v1/emp/employees/6ad15666e91e30ffa68501a0 403 14ms ip=::1 user=bob
+2026-10-15T22:48:00.675Z [WARN] Access denied: user "bob" tried to access employee 6ad15666e91e30ffa68501a0 that belongs to another user
+2026-10-15T22:48:00.677Z [WARN] DELETE /api/v1/emp/employees?eid=6ad15666e91e30ffa68501a0 403 10ms ip=::1 user=bob
+2026-10-15T22:48:12.654Z [INFO] GET /api/v1/emp/employees/6ad157b9e91e30ffa68501a3 200 5ms ip=::1 user=bob
+2026-10-15T22:48:24.362Z [INFO] GET /api/v1/emp/employees/6ad15666e91e30ffa68501a0 200 6ms ip=::1 user=alice
+2026-10-15T22:48:39.615Z [INFO] Connected to MongoDB database "comp3123_assignment1"
+2026-10-15T22:48:39.622Z [INFO] Server started on http://localhost:3000
+2026-10-15T22:48:48.744Z [INFO] Login successful: alice
+2026-10-15T22:48:48.748Z [INFO] POST /api/v1/user/login 200 117ms ip=::1 user=-
+2026-10-15T22:49:20.198Z [WARN] Auth failed (expired token): GET /api/v1/emp/employees
+2026-10-15T22:49:20.199Z [WARN] GET /api/v1/emp/employees 401 4ms ip=::1 user=-
+2026-10-15T22:49:34.463Z [INFO] Connected to MongoDB database "comp3123_assignment1"
+2026-10-15T22:49:34.473Z [INFO] Server started on http://localhost:3000
+2026-10-15T22:49:43.557Z [WARN] Login failed for "alice"
+2026-10-15T22:49:43.562Z [WARN] POST /api/v1/user/login 401 107ms ip=::1 user=-
+2026-10-15T22:49:46.391Z [WARN] Login failed for "alice"
+2026-10-15T22:49:46.392Z [WARN] POST /api/v1/user/login 401 68ms ip=::1 user=-
+2026-10-15T22:49:48.263Z [WARN] Login failed for "alice"
+2026-10-15T22:49:48.264Z [WARN] POST /api/v1/user/login 401 65ms ip=::1 user=-
+2026-10-15T22:49:50.178Z [WARN] Login failed for "alice"
+2026-10-15T22:49:50.180Z [WARN] POST /api/v1/user/login 401 68ms ip=::1 user=-
+2026-10-15T22:49:52.148Z [WARN] Login failed for "alice"
+2026-10-15T22:49:52.149Z [WARN] POST /api/v1/user/login 401 62ms ip=::1 user=-
+2026-10-15T22:49:53.961Z [WARN] Login failed for "alice"
+2026-10-15T22:49:53.962Z [WARN] POST /api/v1/user/login 401 62ms ip=::1 user=-
+2026-10-15T22:49:55.713Z [WARN] Login failed for "alice"
+2026-10-15T22:49:55.714Z [WARN] POST /api/v1/user/login 401 68ms ip=::1 user=-
+2026-10-15T22:49:57.706Z [WARN] Login failed for "alice"
+2026-10-15T22:49:57.707Z [WARN] POST /api/v1/user/login 401 71ms ip=::1 user=-
+2026-10-15T22:49:59.610Z [WARN] Login failed for "alice"
+2026-10-15T22:49:59.611Z [WARN] POST /api/v1/user/login 401 66ms ip=::1 user=-
+2026-10-15T22:50:01.341Z [WARN] Login failed for "alice"
+2026-10-15T22:50:01.343Z [WARN] POST /api/v1/user/login 401 66ms ip=::1 user=-
+2026-10-15T22:50:03.189Z [WARN] Login failed for "alice"
+2026-10-15T22:50:03.189Z [WARN] POST /api/v1/user/login 401 60ms ip=::1 user=-
+2026-10-15T22:50:04.887Z [WARN] Login failed for "alice"
+2026-10-15T22:50:04.888Z [WARN] POST /api/v1/user/login 401 66ms ip=::1 user=-
+2026-10-15T22:50:06.667Z [WARN] Login failed for "alice"
+2026-10-15T22:50:06.668Z [WARN] POST /api/v1/user/login 401 61ms ip=::1 user=-
+2026-10-15T22:50:08.498Z [WARN] Login failed for "alice"
+2026-10-15T22:50:08.499Z [WARN] POST /api/v1/user/login 401 64ms ip=::1 user=-
+2026-10-15T22:50:10.295Z [WARN] Login failed for "alice"
+2026-10-15T22:50:10.296Z [WARN] POST /api/v1/user/login 401 61ms ip=::1 user=-
+2026-10-15T22:50:12.141Z [WARN] Login failed for "alice"
+2026-10-15T22:50:12.143Z [WARN] POST /api/v1/user/login 401 62ms ip=::1 user=-
+2026-10-15T22:50:14.359Z [WARN] Login failed for "alice"
+2026-10-15T22:50:14.361Z [WARN] POST /api/v1/user/login 401 68ms ip=::1 user=-
+2026-10-15T22:50:16.353Z [WARN] Login failed for "alice"
+2026-10-15T22:50:16.354Z [WARN] POST /api/v1/user/login 401 64ms ip=::1 user=-
+2026-10-15T22:50:18.777Z [WARN] Login failed for "alice"
+2026-10-15T22:50:18.778Z [WARN] POST /api/v1/user/login 401 70ms ip=::1 user=-
+2026-10-15T22:50:20.965Z [WARN] Login failed for "alice"
+2026-10-15T22:50:20.966Z [WARN] POST /api/v1/user/login 401 65ms ip=::1 user=-
+2026-10-15T22:50:22.833Z [WARN] Rate limit reached: POST /api/v1/user/login ip=::1
+2026-10-15T22:50:22.834Z [WARN] POST /api/v1/user/login 429 2ms ip=::1 user=-
+2026-10-15T22:50:58.126Z [ERROR] GET /api/v1/emp/employees - MongoServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at Topology.selectServer (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\sdam\topology.js:348:38)
+    at async executeOperationWithRetries (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\operations\execute_operation.js:181:18)
+    at async executeOperation (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\operations\execute_operation.js:85:16)
+    at async FindCursor._initialize (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\find_cursor.js:62:26)
+    at async FindCursor.cursorInit (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\abstract_cursor.js:619:27)
+    at async FindCursor.fetchBatch (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\abstract_cursor.js:653:13)
+    at async FindCursor.next (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\abstract_cursor.js:325:17)
+    at async Collection.findOne (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\collection.js:313:24)
+    at async model.Query._findOne (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongoose\lib\query.js:2789:15)
+    at async maybeTracedQueryExec (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongoose\lib\query.js:4797:65)
+2026-10-15T22:50:58.127Z [ERROR] GET /api/v1/emp/employees 500 5010ms ip=::1 user=-
+2026-10-15T22:51:17.196Z [WARN] Health check: database is not reachable (connect ECONNREFUSED 127.0.0.1:27017)
+2026-10-15T22:51:17.197Z [INFO] GET /health 200 5008ms ip=::1 user=-
+2026-10-15T22:51:27.913Z [INFO] GET /health 200 8ms ip=::1 user=-

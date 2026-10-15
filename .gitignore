@@ -5,9 +5,10 @@ node_modules/
 .env.*
 !.env.example
 
-# Generated log files (logs/sample-app.log is kept as an example)
+# Generated log files (the sample-*.log files are kept as examples)
 logs/*.log
 !logs/sample-app.log
+!logs/sample-error.log
 
 # Submission files and Vercel CLI settings
 submission/

@@ -1,0 +1,12 @@
+2026-10-15T22:50:58.126Z [ERROR] GET /api/v1/emp/employees - MongoServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at Topology.selectServer (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\sdam\topology.js:348:38)
+    at async executeOperationWithRetries (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\operations\execute_operation.js:181:18)
+    at async executeOperation (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\operations\execute_operation.js:85:16)
+    at async FindCursor._initialize (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\find_cursor.js:62:26)
+    at async FindCursor.cursorInit (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\abstract_cursor.js:619:27)
+    at async FindCursor.fetchBatch (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\abstract_cursor.js:653:13)
+    at async FindCursor.next (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\cursor\abstract_cursor.js:325:17)
+    at async Collection.findOne (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongodb\lib\collection.js:313:24)
+    at async model.Query._findOne (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongoose\lib\query.js:2789:15)
+    at async maybeTracedQueryExec (C:\Users\cemdu\OneDrive\Masaüstü\GBC\comp3123_assignment\node_modules\mongoose\lib\query.js:4797:65)
+2026-10-15T22:50:58.127Z [ERROR] GET /api/v1/emp/employees 500 5010ms ip=::1 user=-
