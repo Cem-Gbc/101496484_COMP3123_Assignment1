@@ -3377,6 +3377,458 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "9. Deployed API (Vercel)",
+      "description": "Tests against the deployed API at https://101496484-comp3123-assignment1.vercel.app. The sample users alice and bob already exist there (see README).",
+      "item": [
+        {
+          "name": "9.1 Deployed - Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Database is connected\", () => pm.expect(json.database).to.eql(\"connected\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/health",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.2 Deployed - Login User A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"deployedTokenA\", json.jwt_token);",
+                  "pm.collectionVariables.set(\"deployedUserA_id\", json.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/user/login",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"AlicePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.3 Deployed - Login User B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"deployedTokenB\", json.jwt_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/user/login",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"BobPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.4 Deployed - Create employee (User A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Owner is User A\", () => pm.expect(json.employee.user).to.eql(pm.collectionVariables.get(\"deployedUserA_id\")));",
+                  "pm.collectionVariables.set(\"deployedEmp_id\", json.employee._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/emp/employees",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deployedTokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Anna\",\n  \"last_name\": \"Kim\",\n  \"email\": \"anna.kim.{{$timestamp}}@example.com\",\n  \"position\": \"Designer\",\n  \"salary\": 58000,\n  \"date_of_joining\": \"2024-08-19\",\n  \"department\": \"Design\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.5 Deployed - Get all employees (User A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"All employees belong to User A\", () => json.employees.forEach((e) => pm.expect(e.user).to.eql(pm.collectionVariables.get(\"deployedUserA_id\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/emp/employees",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deployedTokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.6 Deployed - Update employee (User A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Position updated\", () => pm.expect(pm.response.json().employee.position).to.eql(\"Senior Designer\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/emp/employees/{{deployedEmp_id}}",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{deployedEmp_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deployedTokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Senior Designer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.7 Deployed - User B gets User A's employee - 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Error response is JSON with status false\", () => pm.expect(json.status).to.eql(false));",
+                  "pm.test(\"Message says access is not allowed\", () => pm.expect(json.message).to.include(\"permission\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/emp/employees/{{deployedEmp_id}}",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees",
+                "{{deployedEmp_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deployedTokenB}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.8 Deployed - Missing JWT - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/emp/employees",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.9 Deployed - Delete employee (User A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204 No Content\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://101496484-comp3123-assignment1.vercel.app/api/v1/emp/employees?eid={{deployedEmp_id}}",
+              "protocol": "https",
+              "host": [
+                "101496484-comp3123-assignment1",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "emp",
+                "employees"
+              ],
+              "query": [
+                {
+                  "key": "eid",
+                  "value": "{{deployedEmp_id}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{deployedTokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -3443,6 +3895,26 @@
     {
       "key": "rateLimitAttempts",
       "value": "0",
+      "type": "string"
+    },
+    {
+      "key": "deployedTokenA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deployedTokenB",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deployedUserA_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deployedEmp_id",
+      "value": "",
       "type": "string"
     }
   ]
